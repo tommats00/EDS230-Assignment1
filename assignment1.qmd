@@ -1,0 +1,39 @@
+---
+title: "Assignment 1: Creating a Model"
+author: "Tom Gibbens-Matsuyama, Haylee Oyler"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+
+### Goal of this Assignment
+
+Your goal is to implement a simple model of almond yield anomaly response to climate
+
+- Inputs: daily times series of minimum, maximum daily temperatures and 
+- Outputs: maximum, minimum and mean yield anomoly for a input time series
+
+The Lobell et al. 2006 paper will be the source for the transfer function that you will use in your model; specifically
+look at the equations in table 2.
+
+Here are the expected outputs to check our work:
+
+- the maximum almond yield anomaly should be approximately 1920 ton/acre
+- the lowest almond yield anomaly should be approximately -0.027 ton/acre
+- the mean almond yield anomaly should be approximately 182 ton/acre
+
+
+### Load libraries
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+```
+
+### Load data
+```{r}
+climate <- read_table(here("data", "clim.txt")) %>% 
+  clean_names()
+```
+
