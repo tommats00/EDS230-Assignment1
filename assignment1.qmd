@@ -11,20 +11,19 @@ editor_options:
 
 Your goal is to implement a simple model of almond yield anomaly response to climate
 
-- Inputs: daily times series of minimum, maximum daily temperatures and 
-- Outputs: maximum, minimum and mean yield anomoly for a input time series
+-   Inputs: daily times series of minimum, maximum daily temperatures and
+-   Outputs: maximum, minimum and mean yield anomaly for a input time series
 
-The Lobell et al. 2006 paper will be the source for the transfer function that you will use in your model; specifically
-look at the equations in table 2.
+The Lobell et al. 2006 paper will be the source for the transfer function that you will use in your model; specifically look at the equations in table 2.
 
 Here are the expected outputs to check our work:
 
-- the maximum almond yield anomaly should be approximately 1920 ton/acre
-- the lowest almond yield anomaly should be approximately -0.027 ton/acre
-- the mean almond yield anomaly should be approximately 182 ton/acre
-
+-   the maximum almond yield anomaly should be approximately 1920 ton/acre
+-   the lowest almond yield anomaly should be approximately -0.027 ton/acre
+-   the mean almond yield anomaly should be approximately 182 ton/acre
 
 ### Load libraries
+
 ```{r}
 library(tidyverse)
 library(here)
@@ -32,8 +31,84 @@ library(janitor)
 ```
 
 ### Load data
+
 ```{r}
 climate <- read_table(here("data", "clim.txt")) %>% 
   clean_names()
+```
+
+### Almond Model
+We linear regression equation that represents the relationship between the variables we are interested in. This equation is to calculate yield at a given point, i.e. a specific day, month, year. So, we will have to create a for loop that iterates this equation over all the data, then aggreagate to the min, max, and mean. 
+```{r}
+# Variables:
+# Y = Yield Anomaly 
+# Tn = Min Temp
+# Tx = Max Temp
+# P = Precipitation
+
+# Equation: Y = -0.015Tn - 0.0046Tn^2 - 0.07P + 0.0043P^2 + 0.28
+
+almond_model <- function(climate) {
+  
+  # Filter climate data to only February
+  climate <- climate %>% 
+    filter(month == 2)
+  
+  # We need to calculate the variables in the model equation
+  # I.e. Min temp and Precipation
+  
+  
+}
+```
+
+```{r}
+# Variables:
+# Y = Yield Anomaly 
+# Tn = Min Temp
+# Tx = Max Temp
+# P = Precipitation
+
+# Equation: Y = -0.015Tn - 0.0046Tn^2 - 0.07P + 0.0043P^2 + 0.28
+
+
+
+# Filter climate data to only February
+climate_almond <- climate %>% 
+  filter(month == 2)
+
+
+
+yields <- numeric(nrow(climate_almond))
+
+# We need to calculate the variables in the model equation
+# I.e. Min temp and Precipation
+for (i in 1:nrow(climate_almond)){
+  
+  # Access values for all columns 
+  row_data <- climate_almond[i,]
+  
+  # Access values for min temp column
+  tmin <- row_data$tmin_c
+  
+  # Access values for precipation column
+  precip <- row_data$precip
+  
+  # Use the equation to calculate almond yield for the specific observation
+  y <- (-0.015*tmin - 0.0046*tmin**2 - 0.07*precip + 0.0043*precip**2 + 0.28)
+  
+  yields[i] <- y
+  
+  
+}
+
+# store observation into a df for later use
+df <- tibble(yield = yields)
+
+
+min(df$yield)
+
+max(df$yield)
+
+mean(df$yield)
 ```
 
