@@ -1,5 +1,5 @@
 ---
-title: "Assignment 1: Creating a Model"
+title: "Assignment 2: Creating a Model"
 author: "Tom Gibbens-Matsuyama, Haylee Oyler"
 format: html
 editor: visual
@@ -28,6 +28,8 @@ Here are the expected outputs to check our work:
 library(tidyverse)
 library(here)
 library(janitor)
+
+source('almond_yield.R')
 ```
 
 ### Load data
@@ -35,6 +37,11 @@ library(janitor)
 ```{r}
 climate <- read_table(here("data", "clim.txt")) %>% 
   clean_names()
+```
+
+```{r}
+almond_yield(data = climate)
+
 ```
 
 ### Almond Model
