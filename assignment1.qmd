@@ -76,12 +76,75 @@ almond_model <- function(climate) {
 climate_almond <- climate %>% 
   filter(month == 2)
 
-
+climate_precip <- climate %>% 
+  filter(month == 1)
 
 yields <- numeric(nrow(climate_almond))
 
 # We need to calculate the variables in the model equation
 # I.e. Min temp and Precipation
+for (i in 1:nrow(climate_almond)){
+  
+  # Access values for all columns 
+  row_data <- climate_almond[i,]
+  
+  # Access values for min temp column
+  tmin <- row_data$tmin_c
+  
+  for (f in 1:nrow(climate_precip)){
+    
+    # Access values for all columns
+    row_data2 <- climate_precip[i,]
+  
+    # Access precip column
+    precip <- row_data2&precip
+      }
+  
+  # Use the equation to calculate almond yield for the specific observation
+  y <- (-0.015*tmin - 0.0046*tmin**2 - 0.07*precip + 0.0043*precip**2 + 0.28)
+  
+  yields[i] <- y
+  
+  
+}
+
+
+
+
+
+
+yields2 <- numeric(nrow(climate_precip))
+
+
+for (i in 1:nrow(climate_precip)){
+  
+  # Access values for all columns
+  row_data2 <- climate_precip[i,]
+  
+  # Access precip column
+  precip <- row_data2&precip
+  
+  
+  yields2[i] <- 
+}
+
+
+
+
+
+# store observation into a df for later use
+df <- tibble(yield = yields)
+
+
+min(df$yield)
+
+max(df$yield)
+
+mean(df$yield)
+```
+
+```{r}
+
 for (i in 1:nrow(climate_almond)){
   
   # Access values for all columns 
@@ -96,14 +159,13 @@ for (i in 1:nrow(climate_almond)){
   # Use the equation to calculate almond yield for the specific observation
   y <- (-0.015*tmin - 0.0046*tmin**2 - 0.07*precip + 0.0043*precip**2 + 0.28)
   
+  # store observation into a df for later use
   yields[i] <- y
-  
   
 }
 
-# store observation into a df for later use
+# Create a dataframe with the results
 df <- tibble(yield = yields)
-
 
 min(df$yield)
 
