@@ -104,6 +104,9 @@ summary(clean_almond$yield)
 
 ```
 
+
+
+
 This summary yields the exact numbers from the answer
 
 ```{r}
