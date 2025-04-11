@@ -1,10 +1,15 @@
 ---
 title: "Assignment 2: Creating a Model"
 author: "Tom Gibbens-Matsuyama, Haylee Oyler"
-format: html
+format: 
+  html:
+    embed-resources: true
 editor: visual
 editor_options: 
   chunk_output_type: console
+execute:
+  warning: false
+  message: false
 ---
 
 ### Goal of this Assignment
@@ -22,6 +27,10 @@ Here are the expected outputs to check our work:
 -   the lowest almond yield anomaly should be approximately -0.027 ton/acre
 -   the mean almond yield anomaly should be approximately 182 ton/acre
 
+### Our conceptual model
+
+![](images/diagram.png)
+
 ### Load libraries
 
 ```{r}
@@ -29,7 +38,7 @@ library(tidyverse)
 library(here)
 library(janitor)
 
-source('almond_yield.R')
+source('R/almond_yield.R')
 ```
 
 ### Load data
@@ -39,179 +48,8 @@ climate <- read_table(here("data", "clim.txt")) %>%
   clean_names()
 ```
 
+### Apply the almond model
+
 ```{r}
 almond_yield(data = climate)
-
 ```
-
-### Almond Model
-
-We linear regression equation that represents the relationship between the variables we are interested in. This equation is to calculate yield at a given point, i.e. a specific day, month, year. So, we will have to create a for loop that iterates this equation over all the data, then aggreagate to the min, max, and mean.
-
-```{r}
-# Variables:
-# Y = Yield Anomaly 
-# Tn = Min Temp
-# Tx = Max Temp
-# P = Precipitation
-
-# Equation: Y = -0.015Tn - 0.0046Tn^2 - 0.07P + 0.0043P^2 + 0.28
-
-almond_model <- function(climate) {
-  
-  # Filter climate data to only February
-  climate <- climate %>% 
-    filter(month == 2)
-  
-  # We need to calculate the variables in the model equation
-  # I.e. Min temp and Precipation
-  
-  
-}
-```
-
-
-The correct answer I think...
-
-```{r}
-# Group by year and month to get monthly averages
-almond_month <- climate %>% 
-  group_by(year, month) %>% 
-  summarise(tmin_avg = mean(tmin_c),  
-            tmax_avg = mean(tmax_c),
-            precip_total = sum(precip)) %>% # you don't want average precip, you want total for the month!
-  ungroup()
-```
-
-```{r}
-# Filter to january and february because those are the months used in the paper
-jan_data <- almond_month %>% 
-  filter(month == 1) %>% 
-  select(year, precip_total)
-
-feb_data <- almond_month %>% 
-  filter(month == 2) %>% 
-  select(year, tmin_avg)
-
-# Join just these two together by year
-clean_almond <- left_join(feb_data, jan_data, by = "year")
-
-# Fix the names
-names(clean_almond) <- c("year", "tmin", "precip")
-```
-
-```{r}
-almond_yield <- function(tmin, precip) {
-  y <- (-0.015 * tmin - 0.0046 * tmin^2 - 0.07 * precip + 0.0043 * precip^2 + 0.28)
-  return(y)
-}
-
-clean_almond$yield <- with(clean_almond, almond_yield(tmin, precip))
-summary(clean_almond$yield)
-
-```
-
-
-
-
-This summary yields the exact numbers from the answer
-
-```{r}
-# OLD
-almond_yield <- function(tmin, precip){
-  y <- (-0.015*tmin - 0.0046*tmin**2 - 0.07*precip + 0.0043*precip**2 + 0.28)
-  return(y)
-}
-
-mean_mint <- mean(climate$tmin_c)
-
-almond_yield(mean_mint, mean(climate$precip))
-```
-
-
-
-```{r}
-# yields <- tibble(
-#   year = integer(),
-#   month = integer(),
-#   day = integer(),
-#   yield = numeric()
-# )
-
-yields <- numeric(nrow(almond_month))
-
-
-# Make year and month lists
-years <- seq(range(climate$year)[1], range(climate$year)[2])
-months <- seq(range(climate$month)[1], range(climate$month)[2])
-days <- seq(range(climate$day)[1], range(climate$day)[2])
-
-
-for (year in seq_along(years)){
-  
-  for (month in seq_along(months)){
-    
-    for (day in seq_along(days)) {
-    
-      row_data <- climate[day,]
-    
-      # Access values for min temp column
-      tmin <- row_data$tmin_c
-      
-      # Access values for precipation column
-      precip <- climate[ifelse(day == 1, 12, day - 1),]$precip
-      
-      # Use the equation to calculate almond yield for the specific observation
-      y <- (-0.015*tmin - 0.0046*tmin**2 - 0.07*precip + 0.0043*precip**2 + 0.28)
-      
-      # store observation into a df for later use
-      yields[i] <- y
-      # yields$day <- day
-      # yields$yield <- y
-    }
-    # yields$month <- month
-  }
-  # yields$year <- year
-}
-
-# Create a dataframe with the results
-df <- tibble(yield = yields)
-
-min(df$yield)
-max(df$yield)
-mean(df$yield)
-```
-
-
-```{r}
-yields <- numeric(nrow(almond_month))
-
-for (i in 1:nrow(almond_month)){
-  
-  # Access values for all columns 
-  row_data <- almond_month[i,]
-  
-  # Access values for min temp column
-  tmin <- row_data$mean_tmin
-  
-  # Access values for precipation column
-  precip <- almond_month[i-1,]$mean_precip
-  
-  # Use the equation to calculate almond yield for the specific observation
-  y <- (-0.015*tmin - 0.0046*tmin**2 - 0.07*precip + 0.0043*precip**2 + 0.28)
-  
-  # store observation into a df for later use
-  yields[i] <- y
-  
-}
-
-# Create a dataframe with the results
-df <- tibble(yield = yields)
-
-min(df$yield)
-
-max(df$yield)
-
-mean(df$yield)
-```
-
