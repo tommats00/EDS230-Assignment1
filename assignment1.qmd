@@ -101,6 +101,7 @@ almond_yield <- function(tmin, precip) {
 
 clean_almond$yield <- with(clean_almond, almond_yield(tmin, precip))
 summary(clean_almond$yield)
+
 ```
 
 This summary yields the exact numbers from the answer
