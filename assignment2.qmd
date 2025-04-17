@@ -14,22 +14,41 @@ execute:
 
 ### Goal of this Assignment
 
-Your goal is to implement a simple model of almond yield anomaly response to climate
+1. Develop a profit model for your almond yield
 
--   Inputs: daily times series of minimum, maximum daily temperatures and
--   Outputs: maximum, minimum and mean yield anomaly for a input time series
+- Use your imagination to think about what would make sense
+- Make sure you include parameters
+- You could assume a baseline profit and then adjust according to the anomaly
 
-The Lobell et al. 2006 paper will be the source for the transfer function that you will use in your model; specifically look at the equations in table 2.
+2. Apply the profit model to your almond yield model
 
-Here are the expected outputs to check our work:
+There are many ways to combine the almond yield and profit functions; you can have the profit function "call"/use the almond yield function; or create a wrapper function that calls them in sequence (first the almond yield and then the profit function)
 
--   the maximum almond yield anomaly should be approximately 1920 ton/acre
--   the lowest almond yield anomaly should be approximately -0.027 ton/acre
--   the mean almond yield anomaly should be approximately 182 ton/acre
+Almonds:
+- Corr: -0.71
+- Slope: -1.04
 
-### Our conceptual model
+Almond func:
+- The entire almond yield for that year
 
-![](images/diagram.png)
+Profit func:
+- Compute profit given yearly almond yield (pa)
+
+profit_solar <- compute_profit_frompower(
+  almond_yield = almond_func$yield,
+  year = almond_func$year,
+  price = 30, discount = 0.04
+)
+
+3. Perform  a simple informal sensitivity analysis of almond yield profit using at least 2 parameters
+
+4. Create 2 graphs
+    - one that shows yield anomaly for each year, accounting for uncertainty in the parameters
+    - one that show how yield anomaly in general varies with your parameters
+
+5. Write a short paragraph (in a Quatro document) to summarize you interpretation of your model results (e.g what do 'take away' from your model and sensitivity analysis)
+
+Submit as a group: a Quatro document, your R files for almond yield and profit model on Canvas- Due Date Monday April 21
 
 ### Load libraries
 

@@ -5,23 +5,63 @@ format: html
 editor: visual
 ---
 
-## Quarto
+1. Develop a profit model for your almond yield
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+- Use your imagination to think about what would make sense
+- Make sure you include parameters
+- You could assume a baseline profit and then adjust according to the anomaly
 
-## Running Code
+2. Apply the profit model to your almond yield model
 
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+There are many ways to combine the almond yield and profit functions; you can have the profit function "call"/use the almond yield function; or create a wrapper function that calls them in sequence (first the almond yield and then the profit function)
+
+Almonds:
+- Corr: -0.71
+- Slope: -1.04
+
+Almond func:
+- The entire almond yield for that year
+
+Profit func:
+- Compute profit given yearly almond yield (pa)
+
+profit_almond <- compute_profit_fromyield(
+  almond_yield = clean_monthly$almond_yield, # input
+  year = clean_monthly$year, # input
+  price = 30, # idk (parameter?)
+  discount = 0.04 # parameter
+)
+
+3. Perform  a simple informal sensitivity analysis of almond yield profit using at least 2 parameters
+
+4. Create 2 graphs
+    - one that shows yield anomaly for each year, accounting for uncertainty in the parameters
+    - one that show how yield anomaly in general varies with your parameters
+
+5. Write a short paragraph (in a Quatro document) to summarize you interpretation of your model results (e.g what do 'take away' from your model and sensitivity analysis)
+
+Submit as a group: a Quatro document, your R files for almond yield and profit model on Canvas- Due Date Monday April 21
+
+### Load libraries
 
 ```{r}
-1 + 1
+library(tidyverse)
+library(here)
+library(janitor)
+
+source('R/almond_yield.R')
 ```
 
-You can add options to executable code like this
+### Load data
 
 ```{r}
-#| echo: false
-2 * 2
+climate <- read_table(here("data", "clim.txt")) %>% 
+  clean_names()
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+### Apply the almond model
+
+```{r}
+almond_yield(data = climate)
+```
+

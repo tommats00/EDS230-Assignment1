@@ -48,11 +48,13 @@ almond_yield <- function(data, btemp = -0.015, btemp2 = -0.0046,
   
   # Apply almond field function across input data frame
   clean_monthly$almond_yield <- with(clean_monthly, yield(tmin, precip))
+  clean_monthly <- clean_monthly %>% 
+    select(year, almond_yield)
+  return(clean_monthly)
   
   # Summarize data
-  print(paste0("The minimum, average, and maximum yield anomalies are:")) 
-  return(c(round(min(clean_monthly$almond_yield), 2), 
-           round(mean(clean_monthly$almond_yield), 2), 
-           round(max(clean_monthly$almond_yield),2)))
+  # return(c(round(min(clean_monthly$almond_yield), 2), 
+  #          round(mean(clean_monthly$almond_yield), 2), 
+  #          round(max(clean_monthly$almond_yield),2)))
 }
 
