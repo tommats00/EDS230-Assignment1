@@ -70,5 +70,5 @@ climate <- read_table(here("data", "clim.txt")) %>%
 ### Apply the almond model
 
 ```{r}
-almond_yield(data = climate)
+almond_yield(data = climate) %>% view()
 ```

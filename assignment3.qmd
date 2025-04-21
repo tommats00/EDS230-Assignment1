@@ -49,7 +49,10 @@ library(tidyverse)
 library(here)
 library(janitor)
 
-source('R/almond_yield.R')
+source('R/compute_almond_yield.R')
+source('R/compute_profit.R')
+source('R/compute_NPV.R')
+source('R/run_almond_profit_model.R')
 ```
 
 ### Load data
@@ -62,6 +65,21 @@ climate <- read_table(here("data", "clim.txt")) %>%
 ### Apply the almond model
 
 ```{r}
-almond_yield(data = climate)
+profit_df <- run_almond_profit_model(data = climate)
+```
+
+
+```{r}
+# Plot profit over time with discounting
+ggplot(profit_df, aes(x = year, y = netpresent_profit)) +
+  # geom_boxplot() +
+  geom_line(color = "darkgreen") +
+  geom_point(color = "black") +
+  labs(
+    title = "Discounted Almond Profit Over Time",
+    x = "Year",
+    y = "Discounted Profit ($/acre)"
+  ) +
+  theme_minimal()
 ```
 

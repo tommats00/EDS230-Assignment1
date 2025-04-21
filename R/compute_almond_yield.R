@@ -11,7 +11,7 @@
 #' @export 
 #'
 #' @examples almond_yield(data = climate)
-almond_yield <- function(data, btemp = -0.015, btemp2 = -0.0046, 
+compute_almond_yield <- function(data, btemp = -0.015, btemp2 = -0.0046, 
                          bprecip = -0.07, bprecip2 = 0.0043, 
                          b = 0.28) {
   
