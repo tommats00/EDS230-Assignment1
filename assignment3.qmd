@@ -158,6 +158,7 @@ deviation <- 0.15
 base_price <- 4000  
 n_samples <- 40
 
+# Assuming uniform distribution, could change to normal...
 prices <- runif(n_samples,
                 min = base_price * (1 - deviation),
                 max = base_price * (1 + deviation))
@@ -187,6 +188,88 @@ profit_df_all %>%
     title = "Sensitivity of Almond Profit to Market Price",
     x = "Year",
     y = "Discounted Profit ($/acre)"
+  ) +
+  theme_minimal()
+
+```
+The boxplot represents how the uncertainty in the price for each year affects the overall profit from almond yields. 
+
+For the other parameter, we could change the discounting rate? We could also vary one of the betas. 
+
+```{r}
+# Sensitivtiy analysis for price assuming 15% deviation
+deviation <- 0.15
+base_price <- 4000  
+n_samples <- 300
+
+# Assuming uniform distribution, could change to normal...
+price <- runif(n_samples,
+                min = base_price * (1 - deviation),
+                max = base_price * (1 + deviation))
+
+discount <- rnorm(mean = 0.12, sd = 0.1, n = n_samples)
+
+# put samples together
+parms <- cbind.data.frame(price, discount)
+
+# use pmap
+# takes function name and then names of all parameters that don't change
+results <- parms %>% pmap(run_almond_profit_model,
+  data = climate, 
+)
+```
+
+```{r}
+# now we can extract results from the list as above
+mean_profit <- map_df(results, `[`, c("netpresent_profit"))
+```
+
+```{r}
+# and we can add the parameter values for each run
+mean_profit <- cbind.data.frame(mean_profit, parms)
+
+# plot - pick one of the 2 parameter as a color
+# try switching which parameter used for color
+
+p1 <- ggplot(mean_profit, aes(price, mean_profit, col = discount)) +
+  geom_point(cex = 2) +
+  labs(y = "Mean Annual Electricity W", x = "Threshold Radiation (kJ/m2)  \n above which energy production is more efficient")
+p1
+
+```
+
+```{r}
+# Set base values and deviation
+deviation <- 0.15
+base_price <- 4000
+base_discount <- 0.12
+n_samples <- 40
+
+# Sample from uniform distributions
+param_grid <- tibble(
+  price = runif(n_samples, base_price * (1 - deviation), base_price * (1 + deviation)),
+  discount = runif(n_samples, base_discount * (1 - deviation), base_discount * (1 + deviation))
+)
+
+```
+
+```{r}
+profit_runs <- pmap(param_grid, function(price, discount) {
+  run_almond_profit_model(climate, price = price, discount = discount) %>%
+    mutate(price = price, discount = discount)
+})
+
+profit_df_all <- bind_rows(profit_runs)
+
+```
+
+```{r}
+ggplot(profit_df_all, aes(x = factor(year), 
+                          y = netpresent_profit, group = year)) +
+  geom_boxplot(fill = "lightgreen", color = "forestgreen") +
+  labs(
+    title = "Profit Distribution by Year with Varying Price and Discount Rate",
+    x = "Year", y = "Discounted Profit ($/acre)"
   ) +
   theme_minimal()
 
