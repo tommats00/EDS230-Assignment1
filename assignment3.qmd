@@ -22,13 +22,6 @@ There are many ways to combine the almond yield and profit functions; you can ha
 
 Almonds: - Corr: -0.71 - Slope: -1.04
 
-Almond func: - The entire almond yield for that year
-
-Profit func: - Compute profit given yearly almond yield (pa)
-
-profit_almond \<- compute_profit_fromyield( almond_yield = clean_monthly$almond_yield, # input
-  year = clean_monthly$year, \# input price = 30, \# idk (parameter?) discount = 0.04 \# parameter )
-
 3.  Perform a simple informal sensitivity analysis of almond yield profit using at least 2 parameters
 
 4.  Create 2 graphs
@@ -177,3 +170,21 @@ ggplot(profit_df_all, aes(x = factor(year),
   theme_minimal()
 
 ```
+
+```{r}
+p1 <- ggplot(profit_df_all, aes(price, netpresent_profit, col = discount)) +
+  geom_point(cex = 2) +
+  labs(y = "Net present Profit ($)", x = "Price ($/ton)")
+p1
+```
+```{r}
+p2 <- ggplot(profit_df_all, aes(discount, netpresent_profit, col = price)) +
+  geom_point(cex = 2) +
+  labs(y = "Net present Profit ($)", x = "Discount rate")
+p2
+```
+
+```{r}
+
+```
+
