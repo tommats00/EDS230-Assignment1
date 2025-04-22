@@ -10,7 +10,8 @@
 #'  @param bprecip2 (num) Regression coefficient for total monthly precipitation squared in millimeters in January
 #'  @param b (num) Regression coefficient intercept 
 #' @return data frame with year and discounted profit
-run_almond_profit_model <- function(data, price = 4000, discount = 0.12, 
+run_almond_profit_model <- function(data, price = 4000, 
+                                    byield = -1.04, discount = 0.12, 
                                     btemp = -0.015, btemp2 = -0.0046, 
                                     bprecip = -0.07, bprecip2 = 0.0043, 
                                     b = 0.28) {
@@ -21,7 +22,8 @@ run_almond_profit_model <- function(data, price = 4000, discount = 0.12,
     yield = yield_df$almond_yield,
     year = yield_df$year,
     price = price,
-    discount = discount
+    discount = discount,
+    byield = byield
   )
   return(profit_df)
 }

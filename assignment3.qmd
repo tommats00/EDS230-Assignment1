@@ -57,7 +57,7 @@ climate <- read_table(here("data", "clim.txt")) %>%
 ### Apply the almond model
 
 ```{r}
-profit_df <- run_almond_profit_model(data = climate, price=40)
+run_almond_profit_model(data = climate, price=3000)
 ```
 
 NEED TO ADD BASELINE YIELD TO MODEL From Ojas's email:
@@ -76,118 +76,87 @@ Finally, you could also have both graphs with profits, overall uncertainty and t
 
 Feel free to pick and be creative if you feel like it, i'll accept all combinations, just please explain what you've done etc. as mentioned in the assignment.
 
-```{r}
-# Plot profit over time with discounting
-ggplot(profit_df, aes(x = year, y = netpresent_profit)) +
-  # geom_boxplot() +
-  geom_line(color = "darkgreen") +
-  geom_point(color = "black") +
-  labs(
-    title = "Discounted Almond Profit Over Time",
-    x = "Year",
-    y = "Discounted Profit ($/acre)"
-  ) +
-  theme_minimal()
-```
 
 ## Sensitivity Analysis
 
-```{r}
-# Sensitivtiy analysis for price assuming 15% deviation
-deviation <- 0.15
-base_price <- 4000  
-n_samples <- 40
 
-# Assuming uniform distribution, could change to normal...
-prices <- runif(n_samples,
-                min = base_price * (1 - deviation),
-                max = base_price * (1 + deviation))
-
-```
-
-```{r}
-# Map the distribution of prices onto our almond profit model
-profit_runs <- map(prices, function(p) {
-  run_almond_profit_model(climate, price = p) %>%
-    mutate(sampled_price = p)  # track which price this run used
-})
-
-profit_df_all <- bind_rows(profit_runs)
-
-```
-
-```{r}
-# Visualize the results 
-profit_df_all %>% 
-  filter(year != 1995) %>% # Removed outlier 
-  ggplot(aes(x = factor(year), 
-                          y = netpresent_profit, group = year)) +
-  geom_boxplot(fill = "lightblue", color = "steelblue") +
-  labs(
-    title = "Sensitivity of Almond Profit to Market Price",
-    x = "Year",
-    y = "Discounted Profit ($/acre)"
-  ) +
-  theme_minimal()
-
-```
-
-The boxplot represents how the uncertainty in the price for each year affects the overall profit from almond yields.
-
-For the other parameter, we could change the discounting rate? We could also vary one of the betas.
+### Profit Model
+The two parameters we have chosen to vary for our profit model are the baseline price and the coefficient that represents the relationship between price and almond yield. We got the value of this coefficient from the original paper and we set the baseline price somewhat arbitrarily. We will refer to the coefficient as yield coefficient `byield` throughout the markdown. 
 
 ```{r}
 # Set base values and deviation
 deviation <- 0.15
 base_price <- 4000
-base_discount <- 0.12
+base_byield <- -1.04
 n_samples <- 40
 
 # Sample from uniform distributions
 param_grid <- tibble(
-  price = runif(n_samples, base_price * (1 - deviation), base_price * (1 + deviation)),
-  discount = runif(n_samples, base_discount * (1 - deviation), base_discount * (1 + deviation))
+  price = runif(n_samples, 
+                base_price * (1 - deviation), base_price * (1 + deviation)),
+  byield = runif(n_samples, 
+                  range(base_byield * c(1 - deviation, 1 + deviation)))
 )
 
 ```
 
 ```{r}
-profit_runs <- pmap(param_grid, function(price, discount) {
-  run_almond_profit_model(climate, price = price, discount = discount) %>%
-    mutate(price = price, discount = discount)
+# Apply the profit function with the parameter grid above
+profit_runs <- pmap(param_grid, function(price, byield) {
+  run_almond_profit_model(climate, price = price, byield = byield) %>%
+    mutate(price = price, byield = byield)
 })
 
+# Bind data together
 profit_df_all <- bind_rows(profit_runs)
 
 ```
 
 ```{r}
-ggplot(profit_df_all, aes(x = factor(year), 
+# Graph results across time
+profit_df_all %>% 
+  # Drop 1995 because it skews the visualization
+  filter(year != 1995) %>% 
+  ggplot( aes(x = factor(year), 
                           y = netpresent_profit, group = year)) +
   geom_boxplot(fill = "lightgreen", color = "forestgreen") +
   labs(
-    title = "Profit Distribution by Year with Varying Price and Discount Rate",
+    title = "Profit Distribution by Year with Price and Yield Coefficient Uncertainty",
     x = "Year", y = "Discounted Profit ($/acre)"
   ) +
   theme_minimal()
 
 ```
+We decided to filter out the year 1995 because it was vastly skewing the results. That being said, many of the box plos are still hard to interpret because of the spread of the profit variable. This plot is still a little opaque, so we decided to isolate the effect of the two parameters more clearly in the following graphs.
 
 ```{r}
-p1 <- ggplot(profit_df_all, aes(price, netpresent_profit, col = discount)) +
+# Graph profit as a function of baseline price
+p1 <- ggplot(profit_df_all, aes(price, netpresent_profit, col = byield)) +
   geom_point(cex = 2) +
-  labs(y = "Net present Profit ($)", x = "Price ($/ton)")
+  labs(y = "Net Present Profit ($)", 
+       x = "Price ($/ton)",
+       col = "Yield\nCoefficient",
+       title = "Effect of Price and Almond Yield Coefficient\nUncertainty on Profit") +
+  theme_minimal()
 p1
 ```
 
 ```{r}
-p2 <- ggplot(profit_df_all, aes(discount, netpresent_profit, col = price)) +
+# Graph profit as a function of byield
+p2 <- ggplot(profit_df_all, aes(byield, netpresent_profit, col = price)) +
   geom_point(cex = 2) +
-  labs(y = "Net present Profit ($)", x = "Discount rate")
+  labs(y = "Net Present Profit ($)", 
+       x = "Yield Coefficient",
+       col = "Price",
+       title = "Effect of Almond Yield Coefficient and Price\nUncertainty on Profit") +
+  theme_minimal()
 p2
 ```
+Looking at the scatter plots of the relationship between profit and price and yield coefficient, we can see that price does not have a clear relationship with overall profit. This is somewhat surprising. However, `byield` does have a clear positive relationship with net profit, as seen in the graph above. This tells us that as the strength of the relationship between almond yield and price increases, the overall profit also increases. 
 
 ### Varying Almond Yield Parameters
+
+For the almond yield model, we decided to vary the coefficient that represents the relationship between temperature and almond yield `btemp` as well as the coefficient that represents the relationship between precipitation and almond yield `brecip`. 
 
 ```{r}
 # Set base values and deviation
@@ -207,15 +176,18 @@ param_grid <- tibble(
 ```
 
 ```{r}
+# Apply the parameter grid to the almond yield function
 almond_runs <- pmap(param_grid, function(btemp, bprecip) {
   compute_almond_yield(climate, btemp = btemp, bprecip = bprecip) %>%
     mutate(btemp = btemp, bprecip = bprecip)
 })
 
+# Combine rows together
 almond_df_all <- bind_rows(almond_runs)
 ```
 
 ```{r}
+# Plot the relationship between yield and btemp
 p1 <- ggplot(almond_df_all, aes(btemp, almond_yield, col = bprecip)) +
   geom_point(cex = 2) +
   labs(y = "Almond Yield (ton/acre)", 
@@ -225,6 +197,7 @@ p1 <- ggplot(almond_df_all, aes(btemp, almond_yield, col = bprecip)) +
 p1
 ```
 ```{r}
+# Plot the relationship between yield and bprecip
 p1 <- ggplot(almond_df_all, aes(bprecip, almond_yield, col = btemp)) +
   geom_point(cex = 2) +
   labs(y = "Almond Yield (ton/acre)", 
@@ -233,4 +206,9 @@ p1 <- ggplot(almond_df_all, aes(bprecip, almond_yield, col = btemp)) +
        title = "Effect of Precipitation and Temperature Coefficient Parameter\nUncertainty on Almond Yield Anomaly")
 p1
 ```
+Looking at the scatter plots of the relationship between almond yield and the temperature and precipitation coefficients, we can see that yield does not have a clear relationship with temperature. However, `bprecip` does have a clear positive relationship with almond yield, as seen in the graph above. This tells us that as the strength of the relationship between almond yield and precipitation increases, the overall yield also increases. 
+
+## Conclusion
+
+Overall, our sensitivity analysis has shown that different parts of our model are selectively sensitive to different parameters. It is important to understand what drives the variability in your model's outcomes. In this example, we see that profit is driven primarily by `byield` over the baseline price, and almond yield is driven by `bprecip` over `btemp`. 
 
